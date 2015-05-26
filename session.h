@@ -12,7 +12,7 @@ public:
      参数        : 无
      日期        : 2015年5月26日 12:54:35
     */
-    bool CheckExpire(void);
+    bool CheckExpired(void);
     /*
      功能描述    : 初始化Session
      返回值      : 成功为0，失败为-1
@@ -78,6 +78,7 @@ protected:
     }
     int SockInit(void);
 
+    int CycleBufferWrite(void* data,int len);
 private:
     struct timeval start_time;
     struct timeval last_ac_time;    /*上一次访问时间*/
@@ -85,8 +86,9 @@ private:
     int fd;
 
     static Session* instance;
+    char* cycle_buffer;
+    int32_t cycle_buffer_start; /*起始值只用来表示缓冲区是否已被填满，开始循环填充，当数据循环时，头跟尾相等*/
+    int32_t cycle_buffer_end;   /*末尾地址*/
 };
-
-Session Session::instance = NULL;
 
 #endif /*!_session_h__*/
