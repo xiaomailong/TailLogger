@@ -9,7 +9,7 @@ int main(void)
     int socket_fd;
     struct sockaddr_un server_address;
     struct sockaddr_un client_address;
-    int bytes_received, bytes_sent, address_length, integer_buffer;
+    int bytes_received, bytes_sent, integer_buffer;
     socklen_t address_length;
 
     if ((socket_fd = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0)
@@ -32,7 +32,7 @@ int main(void)
 
     memset(&server_address, 0, sizeof(struct sockaddr_un));
     server_address.sun_family = AF_UNIX;
-    strcpy(server_address.sun_path, "./UDSDGSRV");
+    strcpy(server_address.sun_path, "/tmp/CI_UNIX_SOCK_SRV");
 
     integer_buffer = 5;
 
