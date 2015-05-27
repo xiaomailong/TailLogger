@@ -6,6 +6,9 @@
  历史修改记录: v1.0    创建
 **********************************************************************/
 #include "session.h"
+#include <fcntl.h>
+#include <unistd.h>
+#include <assert.h>
 
 int main(int argc, char * argv[])
 {
@@ -22,7 +25,7 @@ int main(int argc, char * argv[])
     dup2(fd,2);
 #endif /* _DEBUG*/
 
-    Session* session = Session.Instance();
+    Session* session = Session::Instance();
 
     ret = session->Init();
     assert(-1 != ret);

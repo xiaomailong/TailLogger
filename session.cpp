@@ -6,18 +6,22 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+#include <time.h>
+#include <fcntl.h>
 
 #define LOG_FILE_NAME_SIZE 100
+#define BUF_SIZE 4096
 
 static char log_file_name[LOG_FILE_NAME_SIZE] = {0};
 
-#define BUF_SIZE 4096
 static const int32_t cycle_buffer_len = (5 * 1024 * 1024);      /*5M*/
 
 static struct sockaddr_un server_address;
 static int socket_fd = -1;
 
-Session Session::instance = NULL;
+Session* Session::instance = NULL;
+static const char* ServerSockPath = "/tmp/CI_UNIX_SOCK_SRV";
+static const char* ClientSockPath = "/tmp/CI_UNIX_SOCK_CLIENT";
 
 /*
  功能描述    : 初始化Session
@@ -151,6 +155,8 @@ bool Session::CheckExpired(void)
 int Session::Recycle()
 {
     int len = 0;
+    struct tm* tm = NULL;
+    time_t cur_time;
 
     if (-1 != fd)
     {
@@ -161,13 +167,16 @@ int Session::Recycle()
     gettimeofday(&start_time,NULL);
     gettimeofday(&last_ac_time,NULL);
 
+    cur_time = time(NULL);
+    tm = localtime(&cur_time);
+
     len = snprintf(log_file_name, LOG_FILE_NAME_SIZE, "cilog_%04d%02d%02d_%02d%02d%02d",
-                start_time->tm_year + 1900,
-                start_time->tm_mon + 1,
-                start_time->tm_mday,
-                start_time->tm_hour,
-                start_time->tm_min,
-                start_time->tm_sec);
+                tm->tm_year + 1900,
+                tm->tm_mon + 1,
+                tm->tm_mday,
+                tm->tm_hour,
+                tm->tm_min,
+                tm->tm_sec);
 
     if(0 > len)
     {

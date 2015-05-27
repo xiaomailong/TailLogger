@@ -1,7 +1,8 @@
 #ifndef _session_h__
 #define _session_h__
 
-#include <time.h>
+#include <stdio.h>
+#include <sys/time.h>
  
 class Session
 {
@@ -38,7 +39,7 @@ public:
         {
             return new Session;
         }
-        return instance
+        return instance;
     }
     /*
      功能描述    : 保存数据
@@ -69,9 +70,6 @@ public:
     */
     int Clean(void);
 
-    const char* ServerSockPath = "/tmp/CI_UNIX_SOCK_SRV";
-    const char* ClientSockPath = "/tmp/CI_UNIX_SOCK_CLIENT";
-
 protected:
     Session()
     {
@@ -87,8 +85,8 @@ private:
 
     static Session* instance;
     char* cycle_buffer;
-    int32_t cycle_buffer_start; /*起始值只用来表示缓冲区是否已被填满，开始循环填充，当数据循环时，头跟尾相等*/
-    int32_t cycle_buffer_end;   /*末尾地址*/
+    int cycle_buffer_start; /*起始值只用来表示缓冲区是否已被填满，开始循环填充，当数据循环时，头跟尾相等*/
+    int cycle_buffer_end;   /*末尾地址*/
 };
 
 #endif /*!_session_h__*/
