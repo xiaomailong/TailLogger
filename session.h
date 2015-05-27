@@ -77,8 +77,6 @@ protected:
     int SockInit(void);
 
     int CycleBufferWrite(void* data,int len);
-
-    bool IsCycleBufferHasData(void);
 private:
     struct timeval start_time;
     struct timeval last_ac_time;    /*上一次访问时间*/

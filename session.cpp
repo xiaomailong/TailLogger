@@ -240,14 +240,6 @@ int Session::Write(void* data,int len)
     return 0;
 }
 
-bool Session::IsCycleBufferHasData(void)
-{
-    if(-1 == cycle_buffer_start && 0 == cycle_buffer_end)
-    {
-        return false;
-    }
-    return true;
-}
 /*
  功能描述    : 将session当中的数据保存到本地磁盘当中
  返回值      : 成功为0，失败为-1
