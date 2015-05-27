@@ -15,7 +15,7 @@
 
 static char log_file_name[LOG_FILE_NAME_SIZE] = {0};
 
-static const int32_t cycle_buffer_len = (5 * 1024 * 1024);      /*5M*/
+static const int32_t cycle_buffer_len = (1 * 1024 * 1024);      /*1M*/
 
 static struct sockaddr_un server_address;
 static int socket_fd = -1;
@@ -98,6 +98,7 @@ int Session::Serve()
 
     while (1)
     {
+        memset(&client_address,0,sizeof(client_address));
         bytes_received = recvfrom(socket_fd, buf, BUF_SIZE, 0,
             (struct sockaddr *) &client_address,
             &address_length);
@@ -121,6 +122,7 @@ int Session::Serve()
         if (0 < bytes_received)
         {
             Write(buf, bytes_received);
+            gettimeofday(&last_ac_time,NULL);
         }
     }
     return 0;
@@ -199,6 +201,13 @@ int Session::CycleBufferWrite(void* data, int len)
     assert(NULL != data);
 
     int ending_len = 0;
+    if(0 >= len)
+    {
+        return -1;
+    }
+
+    assert(cycle_buffer_len >= 4096);
+    assert(cycle_buffer_len > cycle_buffer_end);
 
     ending_len = cycle_buffer_len - cycle_buffer_end;
     if (ending_len > len)
@@ -230,12 +239,16 @@ int Session::Write(void* data,int len)
     assert(NULL != data);
 
     size_t slice_size = 4096;
+    size_t slice_count = len / slice_size;
+    size_t i = 0;
 
     /*确保len的长度大于缓冲区长度时的问题*/
-    for (size_t i = 0; i < slice_size; i += slice_size)
+    for (i = 0; i < slice_count; i += 1)
     {
-        CycleBufferWrite((char*)data + i, slice_size);
+        CycleBufferWrite((char*)data + i * slice_size, slice_size);
     }
+
+    CycleBufferWrite((char*)data + i * slice_size, len - i * slice_size);
 
     return 0;
 }
@@ -256,6 +269,7 @@ int Session::Flush()
     {
         return -1;
     }
+    printf("Flush:cycle_buffer_start:%d\t cycle_buffer_end:%d\n",cycle_buffer_start,cycle_buffer_end);
 
     fd = open(log_file_name, O_WRONLY | O_CREAT, S_IRUSR);
     if (0 > fd)
@@ -275,7 +289,7 @@ int Session::Flush()
     }
     else
     {
-        ret = write(fd,cycle_buffer + cycle_buffer_start,cycle_buffer_len - cycle_buffer_start);
+        ret = write(fd,cycle_buffer + cycle_buffer_end,cycle_buffer_len - cycle_buffer_end);
         if (-1 == ret)
         {
             goto fail;

@@ -40,20 +40,7 @@ int main(void)
         (struct sockaddr *) &server_address,
         sizeof(struct sockaddr_un));
 
-    address_length = sizeof(struct sockaddr_un);
-    bytes_received = recvfrom(socket_fd, (char *)&integer_buffer, sizeof(int), 0,
-        (struct sockaddr *) &(server_address),
-        &address_length);
-
     close(socket_fd);
-
-    if (bytes_received != sizeof(int))
-    {
-        printf("wrong size datagram\n");
-        return 1;
-    }
-
-    printf("%d\n", integer_buffer);
 
     return 0;
 }
