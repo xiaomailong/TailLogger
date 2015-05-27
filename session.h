@@ -83,8 +83,6 @@ private:
     struct timeval start_time;
     struct timeval last_ac_time;    /*上一次访问时间*/
 
-    int fd;
-
     static Session* instance;
     char* cycle_buffer;
     int cycle_buffer_start; /*起始值只用来表示缓冲区是否已被填满，开始循环填充，当数据循环时，头跟尾相等*/
