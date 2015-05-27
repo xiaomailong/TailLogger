@@ -31,8 +31,6 @@ static const char* ClientSockPath = "/tmp/CI_UNIX_SOCK_CLIENT";
 */
 int Session::Init()
 {
-    this->fd = -1;
-
     if (0 > this->SockInit())
     {
         return -1;
@@ -158,11 +156,7 @@ int Session::Recycle()
     struct tm* tm = NULL;
     time_t cur_time;
 
-    if (-1 != fd)
-    {
-        Flush();
-        close(fd);
-    }
+    Flush();
 
     gettimeofday(&start_time,NULL);
     gettimeofday(&last_ac_time,NULL);
@@ -184,14 +178,6 @@ int Session::Recycle()
         log_file_name[LOG_FILE_NAME_SIZE - 1] = 0;
     }
 
-    fd = open(log_file_name,O_WRONLY | O_CREAT,S_IRUSR);
-    if (0 > fd)
-    {
-        printf("打开%s文件失败",log_file_name);
-
-        return -1;
-    }
-
     memset(cycle_buffer, 0, cycle_buffer_len);
 
     cycle_buffer_start = -1;
@@ -206,10 +192,6 @@ int Session::CycleBufferWrite(void* data, int len)
 
     int ending_len = 0;
 
-    if (-1 == fd)
-    {
-        return -1;
-    }
     ending_len = cycle_buffer_len - cycle_buffer_end;
     if (ending_len > len)
     {
@@ -258,18 +240,28 @@ int Session::Write(void* data,int len)
 int Session::Flush()
 {
     int ret = 0;
+    int fd = 0;
 
-    /*当缓存为空的时候不保存数据*/
-    if (-1 == fd)
+    /*缓存当中无数据*/
+    if (-1 == cycle_buffer_start && 0 == cycle_buffer_end)
     {
         return -1;
     }
+
+    fd = open(log_file_name, O_WRONLY | O_CREAT, S_IRUSR);
+    if (0 > fd)
+    {
+        printf("打开%s文件失败", log_file_name);
+
+        return -1;
+    }
+
     if (-1 == cycle_buffer_start)
     {
         ret = write(fd,cycle_buffer,cycle_buffer_end);
         if (-1 == ret)
         {
-            return -1;
+            goto fail;
         }
     }
     else
@@ -277,15 +269,20 @@ int Session::Flush()
         ret = write(fd,cycle_buffer + cycle_buffer_start,cycle_buffer_len - cycle_buffer_start);
         if (-1 == ret)
         {
-            return -1;
+            goto fail;
         }
         ret = write(fd,cycle_buffer,cycle_buffer_end);
         if (-1 == ret)
         {
-            return -1;
+            goto fail;
         }
     }
+    close(fd);
     return 0;
+
+fail:
+    close(fd);
+    return -1;
 }
 /*
  功能描述    : session结束应该做的清除工作
