@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <time.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 
 #define LOG_FILE_NAME_SIZE 100
 #define BUF_SIZE 4096
@@ -22,6 +23,8 @@ static int socket_fd = -1;
 Session* Session::instance = NULL;
 static const char* ServerSockPath = "/tmp/CI_UNIX_SOCK_SRV";
 static const char* ClientSockPath = "/tmp/CI_UNIX_SOCK_CLIENT";
+
+extern const char* log_path;
 
 /*
  功能描述    : 初始化Session
@@ -98,7 +101,7 @@ int Session::Serve()
     while (1)
     {
         bytes_received = recvfrom(socket_fd, buf, BUF_SIZE, 0,
-            (struct sockaddr *) &(client_address),
+            (struct sockaddr *) &client_address,
             &address_length);
 
         if (0 < bytes_received)
@@ -145,7 +148,6 @@ bool Session::CheckExpired(void)
 
     return false;
 }
-
 /*
  功能描述    : 对Session进行回收
  返回值      : 成功为0，失败为-1
@@ -157,6 +159,7 @@ int Session::Recycle()
     int len = 0;
     struct tm* tm = NULL;
     time_t cur_time;
+    struct stat st;
 
     if (-1 != fd)
     {
@@ -170,13 +173,18 @@ int Session::Recycle()
     cur_time = time(NULL);
     tm = localtime(&cur_time);
 
-    len = snprintf(log_file_name, LOG_FILE_NAME_SIZE, "cilog_%04d%02d%02d_%02d%02d%02d",
-                tm->tm_year + 1900,
-                tm->tm_mon + 1,
-                tm->tm_mday,
-                tm->tm_hour,
-                tm->tm_min,
-                tm->tm_sec);
+    assert(NULL != log_path);
+
+    memset(log_file_name,0,LOG_FILE_NAME_SIZE);
+
+    len = snprintf(log_file_name, LOG_FILE_NAME_SIZE, "%s/log_%04d%02d%02d_%02d%02d%02d",
+            log_path,
+            tm->tm_year + 1900,
+            tm->tm_mon + 1,
+            tm->tm_mday,
+            tm->tm_hour,
+            tm->tm_min,
+            tm->tm_sec);
 
     if(0 > len)
     {
@@ -248,6 +256,15 @@ int Session::Write(void* data,int len)
     }
 
     return 0;
+}
+
+bool Session::IsCycleBufferHasData(void)
+{
+    if(-1 == cycle_buffer_start && 0 == cycle_buffer_end)
+    {
+        return false;
+    }
+    return true;
 }
 /*
  功能描述    : 将session当中的数据保存到本地磁盘当中

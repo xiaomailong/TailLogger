@@ -9,6 +9,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <assert.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+const char* log_path = "/root/ci_log/";
 
 int main(int argc, char * argv[])
 {
@@ -24,6 +28,8 @@ int main(int argc, char * argv[])
     dup2(fd,1);
     dup2(fd,2);
 #endif /* _DEBUG*/
+
+    mkdir(log_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
     Session* session = Session::Instance();
 

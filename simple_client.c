@@ -20,9 +20,9 @@ int main(void)
 
     memset(&client_address, 0, sizeof(struct sockaddr_un));
     client_address.sun_family = AF_UNIX;
-    strcpy(client_address.sun_path, "./UDSDGCLNT");
+    strcpy(client_address.sun_path, "/tmp/CI_UNIX_SOCK_CLIENT");
 
-    unlink("./UDSDGCLNT");
+    unlink("/tmp/CI_UNIX_SOCK_CLIENT");
     if (bind(socket_fd, (const struct sockaddr *) &client_address,
         sizeof(struct sockaddr_un)) < 0)
     {
