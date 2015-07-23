@@ -69,6 +69,20 @@ public:
      日期        : 2015年5月26日 15:54:00
     */
     int Clean(void);
+    /*
+     功能描述    : 使用生产者，消费者模式生产手动回收标志
+     返回值      : 成功为0，失败为-1
+     参数        : 无
+     日期        : 2015年7月23日 08:55:00
+    */
+    int ProduceManualRecycle(void);
+    /*
+     功能描述    : 使用生产者，消费者模式消费回收标志
+     返回值      : 是否有手动回收标志
+     参数        : 无
+     日期        : 2015年7月23日 08:55:00
+    */
+    bool ConsumeManualRecycle(void);
 
 protected:
     Session()
@@ -85,6 +99,8 @@ private:
     char* cycle_buffer;
     int cycle_buffer_start; /*起始值只用来表示缓冲区是否已被填满，开始循环填充，当数据循环时，头跟尾相等*/
     int cycle_buffer_end;   /*末尾地址*/
+
+    bool b_manual_recycle;
 };
 
 #endif /*!_session_h__*/

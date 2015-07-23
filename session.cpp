@@ -44,6 +44,7 @@ int Session::Init()
 
     cycle_buffer_start = -1;
     cycle_buffer_end = 0;
+    b_manual_recycle = false;
 
     return 0;
 }
@@ -115,7 +116,7 @@ int Session::Serve()
          * 若session过期则进行回收并重新利用
          * 因为recvfrom超时后会返回，所以保证了当链接中断时，内存当中的数据很快被同步到硬盘上
          */
-        if (CheckExpired())
+        if (CheckExpired() && true == ConsumeManualRecycle())
         {
             Recycle();
         }
@@ -322,3 +323,29 @@ int Session::Clean(void)
 
     return 0;
 }
+/*
+ 功能描述    : 使用生产者，消费者模式生产手动回收标志
+ 返回值      : 成功为0，失败为-1
+ 参数        : 无
+ 日期        : 2015年7月23日 08:55:00
+*/
+int Session::ProduceManualRecycle(void)
+{
+    b_manual_recycle = true;
+
+    return 0;
+}
+/*
+ 功能描述    : 使用生产者，消费者模式消费回收标志
+ 返回值      : 是否有手动回收标志
+ 参数        : 无
+ 日期        : 2015年7月23日 08:55:00
+*/
+bool Session::ConsumeManualRecycle(void)
+{
+    bool temp = b_manual_recycle;
+    b_manual_recycle = false;
+
+    return temp;
+}
+

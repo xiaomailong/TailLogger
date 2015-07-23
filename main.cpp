@@ -11,8 +11,19 @@
 #include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <signal.h>
 
 const char* log_path = "/root/ci_log/";
+
+/* 当收到SIGUSR1信号时强制将数据写入磁盘 */
+static void sig_usr1(void)
+{
+    Session* session = Session::Instance();
+
+    session->ProduceManualRecycle();
+
+    return;
+}
 
 int main(int argc, char * argv[])
 {
@@ -30,6 +41,8 @@ int main(int argc, char * argv[])
 #endif /* _DEBUG*/
 
     mkdir(log_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+    signal(SIGUSR1,sig_usr1);
 
     Session* session = Session::Instance();
 
