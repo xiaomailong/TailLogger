@@ -44,7 +44,7 @@ int Session::Init()
 
     cycle_buffer_start = -1;
     cycle_buffer_end = 0;
-    b_manual_recycle = false;
+    b_manual_recycle = 0;
 
     return 0;
 }
@@ -116,7 +116,7 @@ int Session::Serve()
          * 若session过期则进行回收并重新利用
          * 因为recvfrom超时后会返回，所以保证了当链接中断时，内存当中的数据很快被同步到硬盘上
          */
-        if (CheckExpired() && true == ConsumeManualRecycle())
+        if (CheckExpired() || ConsumeManualRecycle())
         {
             Recycle();
         }
@@ -142,7 +142,7 @@ bool Session::CheckExpired(void)
     gettimeofday(&cur_time,NULL);
 
     /*若时间相差1s则认为过期*/
-    if (cur_time.tv_sec - last_ac_time.tv_sec > 1)
+    if (cur_time.tv_sec - last_ac_time.tv_sec > 5)
     {
         return true;
     }
@@ -331,7 +331,7 @@ int Session::Clean(void)
 */
 int Session::ProduceManualRecycle(void)
 {
-    b_manual_recycle = true;
+    b_manual_recycle = 1;
 
     return 0;
 }
@@ -341,10 +341,11 @@ int Session::ProduceManualRecycle(void)
  参数        : 无
  日期        : 2015年7月23日 08:55:00
 */
-bool Session::ConsumeManualRecycle(void)
+int Session::ConsumeManualRecycle(void)
 {
-    bool temp = b_manual_recycle;
-    b_manual_recycle = false;
+    int temp = b_manual_recycle;
+
+    b_manual_recycle = 0;
 
     return temp;
 }

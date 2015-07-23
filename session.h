@@ -37,7 +37,7 @@ public:
     {
         if (NULL == instance)
         {
-            return new Session;
+            instance = new Session;
         }
         return instance;
     }
@@ -82,7 +82,7 @@ public:
      参数        : 无
      日期        : 2015年7月23日 08:55:00
     */
-    bool ConsumeManualRecycle(void);
+    int ConsumeManualRecycle(void);
 
 protected:
     Session()
@@ -100,7 +100,7 @@ private:
     int cycle_buffer_start; /*起始值只用来表示缓冲区是否已被填满，开始循环填充，当数据循环时，头跟尾相等*/
     int cycle_buffer_end;   /*末尾地址*/
 
-    bool b_manual_recycle;
+    int b_manual_recycle;
 };
 
 #endif /*!_session_h__*/
