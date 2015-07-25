@@ -23,6 +23,13 @@ cd ${CI_HOME}/build
 
 该脚本会在开机后自动被加载。  
 
+# 手动同步缓存当中的数据至磁盘
+在有的时候需要检查当前系统的状态，但是没有日志信息，可以通过向TailLogger发送`SIGUSR1`而达到同步缓存至磁盘的目的，如下
+
+```bash
+#pkill -SIGUSR1 taillogger
+```
+
 # 需要注意的问题
 1. TailLogger默认使用`/root/ci_log`目录作为日志记录目录。
 2. TailLogger使用的是一个循环的数组作为缓存，默认大小1M。
